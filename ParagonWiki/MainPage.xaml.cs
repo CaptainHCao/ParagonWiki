@@ -75,9 +75,17 @@ namespace ParagonWiki
             Searchables.Clear();
             foreach (var item in Items) { Searchables.Add(item); }
             foreach (var item in Quests) { Searchables.Add(item); }
+
+            FetchNPCs();
             foreach (var item in NPCs) { Searchables.Add(item); }
         }
 
+        private void FetchNPCs()
+        {
+            foreach (NPC npc in NPCs) { 
+                npc.dialogues = (from item in Dialogues where item.Owner.Equals(npc.Name, StringComparison.OrdinalIgnoreCase) orderby item.QuestID select item).ToList();
+            }
+        }
 
         private async void ButtonClicked(object sender, EventArgs e)
         {
@@ -110,7 +118,12 @@ namespace ParagonWiki
         public void OnTextChanged(object sender, EventArgs e)
         {
             FetchSearchSource();
-            searchResults.ItemsSource = (from item in Searchables where item.Name.Contains(searchBar.Text, StringComparison.OrdinalIgnoreCase) select item).ToList();
+
+            List<Searchable> prioResults = (from item in Searchables where item.Name.StartsWith(searchBar.Text, StringComparison.OrdinalIgnoreCase) select item).ToList();
+
+            List<Searchable> secondResults = (from item in Searchables where item.Name.Contains(searchBar.Text, StringComparison.OrdinalIgnoreCase) select item).ToList();
+
+            searchResults.ItemsSource = prioResults.Union(secondResults).ToList();
         }
 
         private async void  lv_ItemTapped(object sender, ItemTappedEventArgs e)
@@ -120,7 +133,17 @@ namespace ParagonWiki
             {
                 return;
             }
-            await Navigation.PushAsync(new DescriptionPage(search), true);
+            if (search is Item item) {
+                await Navigation.PushAsync(new DescriptionPage(item), true);
+            }
+            if (search is NPC npc)
+            {
+                await Navigation.PushAsync(new NpcPage(npc), true);
+            }
+            if (search is Quest quest) 
+            {
+                await Navigation.PushAsync(new QuestPage(quest), true);
+            }
         }
     }
 }

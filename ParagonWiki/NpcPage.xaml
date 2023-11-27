@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ParagonWiki.NpcPage"
+             Title="NpcPage">
+    <ScrollView>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Image Grid.Column="0" Grid.Row="0" VerticalOptions="Center" HorizontalOptions="Center"></Image>
+            <VerticalStackLayout Grid.Column="1" Grid.Row="0" VerticalOptions="Center" HorizontalOptions="Center">
+                <Label x:Name="title" TextType="Html" FontSize="40"/>
+                <Label x:Name="description" TextType="Html" FontSize="15" FontAttributes="Italic"/>
+            </VerticalStackLayout>
+            <VerticalStackLayout Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" VerticalOptions="Center" HorizontalOptions="Center">
+                <Label Text="Quotes" TextType="Html" FontSize="30"/>
+                <VerticalStackLayout x:Name="quotes" VerticalOptions="Center" HorizontalOptions="Start"/>
+            </VerticalStackLayout>
+        </Grid>
+    </ScrollView>
+</ContentPage>

@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="ParagonWiki.DescriptionPage"
-             Title="DescriptionPage">
+             x:Class="ParagonWiki.QuestPage"
+             Title="QuestPage">
     <ScrollView>
-        <VerticalStackLayout x:Name="container" HorizontalOptions="Center">
+        <VerticalStackLayout x:Name="container">
             <Label x:Name="title" TextType="Html" FontSize="30"></Label>
             <Label x:Name="description" TextType="Html" FontSize="20" FontAttributes="Italic" ></Label>
+            <Label x:Name="progress" TextType="Html" FontSize="20" ></Label>
+            <Label Text="Rewards: " TextType="Html" FontSize="20"></Label>
             <VerticalStackLayout x:Name="itemSection">
                 <Label x:Name="price" TextType="Html" FontSize="25" ></Label>
                 <Label x:Name="effect" TextType="Html" FontSize="25" ></Label>

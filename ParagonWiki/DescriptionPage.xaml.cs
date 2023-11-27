@@ -7,115 +7,32 @@ namespace ParagonWiki;
 
 public partial class DescriptionPage : ContentPage
 {
-	public DescriptionPage(Searchable searchItem)
+	public DescriptionPage(Item item)
 	{
 		InitializeComponent();
-		InitialPage(searchItem);
+        ItemPage(item);
 	}
 
-	public void InitialPage(Searchable searchItem)
-	{
-		if (searchItem == null) { return; }
-		if (searchItem is Item item)
-		{
-            ItemPage(item);
-        }
-    }
 	public void ItemPage(Item item)
 	{
-		VerticalStackLayout container = new VerticalStackLayout
-		{
-			HorizontalOptions = LayoutOptions.Center,
-			Padding = 50
-		};
-		Label title = new Label
-		{
-			Text = item.Name,
-			TextType = TextType.Html,
-            HorizontalOptions = LayoutOptions.Center,
-            FontAttributes = FontAttributes.Bold,
-			FontSize = 30
-		};
-        Label description = new Label
-        {
-            Text = item.Description,
-            TextType = TextType.Html,
-            HorizontalOptions = LayoutOptions.Center,
-            FontAttributes = FontAttributes.Italic,
-			FontSize = 20
-        };
-
-        Label itemSection = new Label
-        {
-            Text = "<b>Item Stats:</b> ",
-            TextType = TextType.Html,
-            FontSize = 25
-        };
-
-        string itemEffect = string.Empty;
-		if (item.Effect != null)
-		{
-			itemEffect = item.Effect;
-		} else
-		{
-			itemEffect = "No special effect has been discovered...";
-		}
-
-        Label effect = new Label
-        {
-            Text = itemEffect,
-            TextType = TextType.Html,
-            FontSize = 20
-        };
-
-        int? maxQuantityInSlot = 1;
-        if ((bool)item.Stackable)
-        {
-            maxQuantityInSlot = item.MaxQuantityInSlot;
-        }
-
-        Label maxQuantity = new Label
-        {
-            Text = maxQuantityInSlot == 1 ? "You can only carry 1 " + item.Name + " in 1 inventory slot. This stuff is heavy." 
-            : maxQuantityInSlot + " of these items can be carried at the same time in 1 inventory slot.",
-            TextType = TextType.Html,
-            FontSize = 20
-        };
-
-        Label price = new Label
-        {
-            Text = "Can be sold for " + item.Price.ToString() + "G",
-            TextType = TextType.Html,
-            FontSize = 20
-        };
-
-        Content = container;
-        container.Children.Add(title);
-        container.Children.Add(description);
-        container.Children.Add(itemSection);
-        container.Children.Add(effect);
-        container.Children.Add(maxQuantity);
-        container.Children.Add(price);
-
-        // wrap around the stats 
-        VerticalStackLayout statsContainer = new VerticalStackLayout();
+        title.Text = $"{item.Name} ({item.Type})";
+        description.Text = item.Description;
+        effect.Text = item.Effect != null ? item.Effect : "No special effect has been discovered...";
+        maxQuantity.Text = (bool)item.Stackable ? item.MaxQuantityInSlot + " of these items can be carried at the same time in 1 inventory slot."
+            : "You can only carry 1 " + item.Name + " in 1 inventory slot. This stuff is heavy.";
+        price.Text = "Can be sold for " + item.Price.ToString() + "G";
 
         // sections for non-basic items
         // 8 cases for None, Weapon, Support Weapon, Armor, Helmet, Cape, Cosmetic, Quest Item
         switch (item.EquipmentType)
         {
             case "None":
+                equipmentTitle.Text = "<i>Not an equippable item.</i>";
                 break;
 
             case "Weapon":
                 // section for each kind of special item
-                Label weaponSection = new Label
-                {
-                    Text = "<b>Weapon Stats:</b> ",
-                    TextType = TextType.Html,
-                    FontSize = 25
-                };
-                statsContainer.Children.Add(weaponSection);
+                equipmentTitle.Text = "<b>Weapon Stats:</b> ";
 
                 if (item.PhysicDmg != null)
                 {
@@ -125,7 +42,7 @@ public partial class DescriptionPage : ContentPage
                         TextType = TextType.Html,
                         FontSize = 20
                     };
-                    statsContainer.Children.Add(physicDMG);
+                    equipmentStats.Children.Add(physicDMG);
                 }
                 if (item.AbilityDmg != null)
                 {
@@ -135,7 +52,7 @@ public partial class DescriptionPage : ContentPage
                         TextType = TextType.Html,
                         FontSize = 20
                     };
-                    statsContainer.Children.Add(abilityDMG);
+                    equipmentStats.Children.Add(abilityDMG);
                 }
                 if (item.CriticalChance != null)
                 {
@@ -145,7 +62,7 @@ public partial class DescriptionPage : ContentPage
                         TextType = TextType.Html,
                         FontSize = 20
                     };
-                    statsContainer.Children.Add(crit);
+                    equipmentStats.Children.Add(crit);
                 }
                 if (item.KnockBackForce != null)
                 {
@@ -155,7 +72,7 @@ public partial class DescriptionPage : ContentPage
                         TextType = TextType.Html,
                         FontSize = 20
                     };
-                    statsContainer.Children.Add(knockback);
+                    equipmentStats.Children.Add(knockback);
                 }
                 if (item.CanBeLeftHanded != null)
                 {
@@ -166,7 +83,7 @@ public partial class DescriptionPage : ContentPage
                         TextType = TextType.Html,
                         FontSize = 20
                     };
-                    statsContainer.Children.Add(lefthanded);
+                    equipmentStats.Children.Add(lefthanded);
                 }
                 break;
 
@@ -176,13 +93,7 @@ public partial class DescriptionPage : ContentPage
                 break;
 
             case "Support Weapon":
-                Label supWeaponSection = new Label
-                {
-                    Text = "<b>Support Weapon Stats:</b> ",
-                    TextType = TextType.Html,
-                    FontSize = 25
-                };
-                statsContainer.Children.Add(supWeaponSection);
+                equipmentTitle.Text = "<b>Support Weapon Stats:</b> ";
 
                 // iterate through any stats that is not null
                 if (item.BlockRate != null) {
@@ -192,7 +103,7 @@ public partial class DescriptionPage : ContentPage
                         TextType = TextType.Html,
                         FontSize = 20
                     };
-                    statsContainer.Children.Add(block);
+                    equipmentStats.Children.Add(block);
                 }
                 if (item.Durability != null) {
                     Label durability = new Label
@@ -201,18 +112,12 @@ public partial class DescriptionPage : ContentPage
                         TextType = TextType.Html,
                         FontSize = 20
                     };
-                    statsContainer.Children.Add(durability);
+                    equipmentStats.Children.Add(durability);
                 }
                 break;
 
             case "Armor":
-                Label armorSection = new Label
-                {
-                    Text = "<b>Armor Stats:</b> ",
-                    TextType = TextType.Html,
-                    FontSize = 25
-                };
-                statsContainer.Children.Add(armorSection);
+                equipmentTitle.Text = "<b>Armor Stats:</b> ";
 
                 if (item.Defense != null) 
                 {
@@ -222,18 +127,12 @@ public partial class DescriptionPage : ContentPage
                         TextType = TextType.Html,
                         FontSize = 20
                     };
-                    statsContainer.Children.Add(defense);
+                    equipmentStats.Children.Add(defense);
                 }
                 break;
 
             case "Helmet":
-                Label HelmetSection = new Label
-                {
-                    Text = "<b>Helmet Stats:</b> ",
-                    TextType = TextType.Html,
-                    FontSize = 25
-                };
-                statsContainer.Children.Add(HelmetSection);
+                equipmentTitle.Text = "<b>Helmet Stats:</b> ";
 
                 if (item.SkillDamageAmplifier != null)
                 {
@@ -243,50 +142,29 @@ public partial class DescriptionPage : ContentPage
                         TextType = TextType.Html,
                         FontSize = 20
                     };
-                    statsContainer.Children.Add(skillDamage);
+                    equipmentStats.Children.Add(skillDamage);
                 }
                 break;
 
             case "Cape":
-                Label CapeSection = new Label
-                {
-                    Text = "<b>Cape Stats:</b> ",
-                    TextType = TextType.Html,
-                    FontSize = 25
-                };
-                statsContainer.Children.Add(CapeSection);
-
                 // currently having no atributes
-                // if there are furture attributes, they needs to be added to Item.cs                
+                // if there are furture attributes, they needs to be added to Item.cs
+
+                equipmentTitle.Text = "<b>Cape Stats:</b> ";
                 break;
 
             case "Cosmetic":
-                Label CosmeticSection = new Label
-                {
-                    Text = "<b>Cosmetic Stats:</b> ",
-                    TextType = TextType.Html,
-                    FontSize = 25
-                };
-                statsContainer.Children.Add(CosmeticSection);
-
                 // currently having no atributes
                 // if there are furture attributes, they needs to be added to Item.cs 
+
+                equipmentTitle.Text = "<b>Cosmetic Stats:</b> ";
                 break;
         }
 
         // if there are stats other than the section title
-        if (statsContainer.Children.Count > 1)
+        if (item.EquipmentType != "None" && equipmentStats.Children.Count == 0)
         {
-            container.Children.Add(statsContainer);
-        }
-        else if (statsContainer.Children.Count == 1)
-        {
-            container.Children.Add(new Label
-            {
-                Text = $"<i>No outstanding stats have been recorded for this <b>{item.EquipmentType.ToLower()}</b>.</i>",
-                TextType = TextType.Html,
-                FontSize = 20
-            });
+            equipmentTitle.Text = $"<i>No outstanding stats have been recorded for this <b>{item.EquipmentType.ToLower()}</b>.</i>";
         }
     }
 }
