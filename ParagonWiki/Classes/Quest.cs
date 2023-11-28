@@ -16,5 +16,10 @@ namespace ParagonWiki.Classes
         [JsonProperty(PropertyName = "QuestID")] public int? QuestID { get; set; }
         [JsonProperty(PropertyName = "QuestRequirement")] public List<Item>? QuestRequirement { get; set; }
         [JsonProperty(PropertyName = "QuestReward")] public List<Item>? QuestReward { get; set; }
+
+
+        // attributes that keep track for this app only
+        public List<Item> acquiredRewards = new List<Item>();
+        public bool acquiredRewardsCalculated = false;
     }
 }

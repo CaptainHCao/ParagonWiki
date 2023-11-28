@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using Firebase.Database;
 using Firebase.Database.Query;
 using Microsoft.Maui.Storage;
@@ -142,8 +143,47 @@ namespace ParagonWiki
             }
             if (search is Quest quest) 
             {
+                AccumulateRewards(quest);
                 await Navigation.PushAsync(new QuestPage(quest), true);
             }
+        }
+
+        private void AccumulateRewards(Quest quest)
+        {
+            // singleton for this method to avoid running redundant loops many times
+            if (!quest.acquiredRewardsCalculated) 
+            {
+                for (int i = 1; i < quest.QuestID; i++)
+                {
+                    Quest aPreviousQuest = (from item in Quests where item.QuestID == i select item).First();
+
+                    // Only process if this quest have rewards.
+                    if (aPreviousQuest.QuestReward != null) 
+                    {
+                        foreach (var reward in aPreviousQuest.QuestReward)
+                        {
+                            bool found = false;
+                            for (int j = 0; j < quest.acquiredRewards.Count; j++)
+                            {
+                                // if the item has already been in the pool, simply update the quantity
+                                if (reward.Name.Equals(quest.acquiredRewards[j].Name, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    found = true;
+                                    quest.acquiredRewards[j].Quantity += reward.Quantity;
+                                    break;
+                                }
+                            }
+                            // cant find the item with that name in the pool, add a new on
+                            if (!found)
+                            {
+                                quest.acquiredRewards.Add(reward);
+                            }
+                        }
+                    }
+                    
+                }
+                quest.acquiredRewardsCalculated = true;
+            }          
         }
     }
 }
