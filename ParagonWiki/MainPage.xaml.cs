@@ -5,9 +5,11 @@ using System.Reactive.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using Firebase.Database;
 using Firebase.Database.Query;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using Newtonsoft.Json;
 using ParagonWiki.Classes;
+using SQLite;
 
 namespace ParagonWiki
 {
@@ -19,9 +21,20 @@ namespace ParagonWiki
         public ObservableCollection<NPC> NPCs { get; set; } = new ObservableCollection<NPC>();
         public static ObservableCollection<Searchable> Searchables { get; set; } = new ObservableCollection<Searchable>();
 
+        public static List<Searchable> history { get; set; } = new List<Searchable>();
+
         FirebaseClient firebaseClient = new FirebaseClient("https://paragon-plus-b130f-default-rtdb.firebaseio.com/");
 
         public static MainPage singleton;
+
+        SQLiteAsyncConnection conn;
+        public async void CreateConnection()
+        {
+            string libFolder = FileSystem.AppDataDirectory;
+            string fname = System.IO.Path.Combine(libFolder, "history.db");
+            conn = new SQLiteAsyncConnection(fname);
+            await conn.CreateTableAsync<Searchable>();
+        }
 
         public MainPage()
         {
@@ -29,46 +42,91 @@ namespace ParagonWiki
 
             //BindingContext = this;
 
-            var ItemCollection = firebaseClient
+            //var ItemCollection = firebaseClient
+            //                    .Child("Items")
+            //                    .AsObservable<Item>()
+            //                    .Subscribe((item) =>
+            //                    {
+            //                        if (item.Object != null)
+            //                        {
+            //                            Items.Add(item.Object);
+            //                        }
+            //                    });
+            //var DialogueCollection = firebaseClient
+            //                    .Child("Dialogues")
+            //                    .AsObservable<Dialogue>()
+            //                    .Subscribe((item) =>
+            //                    {
+            //                        if (item.Object != null)
+            //                        {
+            //                            Dialogues.Add(item.Object);
+            //                        }
+            //                    });
+            //var NpcCollection = firebaseClient
+            //                    .Child("NPCs")
+            //                    .AsObservable<NPC>()
+            //                    .Subscribe((item) =>
+            //                    {
+            //                        if (item.Object != null)
+            //                        {
+            //                            NPCs.Add(item.Object);
+            //                        }
+            //                    });
+            //var QuestCollection = firebaseClient
+            //                    .Child("Quests")
+            //                    .AsObservable<Quest>()
+            //                    .Subscribe((item) =>
+            //                    {
+            //                        if (item.Object != null)
+            //                        {
+            //                            Quests.Add(item.Object);
+            //                        }
+            //                    });
+
+            InitData();
+        }
+
+        protected async void InitData()
+        {
+            // Get the data from the database
+            var fireBaseItems = (await firebaseClient
                                 .Child("Items")
-                                .AsObservable<Item>()
-                                .Subscribe((item) =>
-                                {
-                                    if (item.Object != null)
-                                    {
-                                        Items.Add(item.Object);
-                                    }
-                                });
-            var DialogueCollection = firebaseClient
+                                .OnceAsListAsync
+                                <Item>());
+            foreach (var item in fireBaseItems)
+            {
+                Items.Add(item.Object);
+            }
+            var fireBaseDialogues = (await firebaseClient
                                 .Child("Dialogues")
-                                .AsObservable<Dialogue>()
-                                .Subscribe((item) =>
-                                {
-                                    if (item.Object != null)
-                                    {
-                                        Dialogues.Add(item.Object);
-                                    }
-                                });
-            var NpcCollection = firebaseClient
+                                .OnceAsListAsync
+                                <Dialogue>());
+            foreach (var item in fireBaseDialogues)
+            {
+                Dialogues.Add(item.Object);
+            }
+            var fireBaseNPCs = (await firebaseClient
                                 .Child("NPCs")
-                                .AsObservable<NPC>()
-                                .Subscribe((item) =>
-                                {
-                                    if (item.Object != null)
-                                    {
-                                        NPCs.Add(item.Object);
-                                    }
-                                });
-            var QuestCollection = firebaseClient
+                                .OnceAsListAsync
+                                <NPC>());
+            foreach (var item in fireBaseNPCs)
+            {
+                NPCs.Add(item.Object);
+            }
+            var fireBaseQuests = (await firebaseClient
                                 .Child("Quests")
-                                .AsObservable<Quest>()
-                                .Subscribe((item) =>
-                                {
-                                    if (item.Object != null)
-                                    {
-                                        Quests.Add(item.Object);
-                                    }
-                                });
+                                .OnceAsListAsync
+                                <Quest>());
+            foreach (var item in fireBaseQuests)
+            {
+                Quests.Add(item.Object);
+            }
+            
+            // fectch the searchable item list
+            FetchSearchSource();
+            // update the history
+            CreateConnection();
+            matchHistoryItems();
         }
 
         private void FetchSearchSource()
@@ -90,41 +148,48 @@ namespace ParagonWiki
 
         private async void ButtonClicked(object sender, EventArgs e)
         {
-            //// this code manually pull down data
-            //try
-            //{
-            //    var result = await firebaseClient
-            //        .Child("Items").OnceAsListAsync<Item>().
-            //    foreach (var item in result)
-            //    {
-            //        var data = item.Object; // This is an instance of YourDataModel
-            //        Items.Add(data);
-            //    }
-
-            //} catch (Firebase.Database.FirebaseException ex)
-            //{
-            //    Debug.WriteLine(ex);
-            //}
-
+           // testing code
             Debug.WriteLine(Items.Count);
             Debug.WriteLine(NPCs.Count);
             Debug.WriteLine(Quests.Count);
             Debug.WriteLine(Dialogues.Count);
 
-            FetchSearchSource();
             Debug.WriteLine(Searchables.Count);
 
         }
 
         public void OnTextChanged(object sender, EventArgs e)
         {
-            FetchSearchSource();
+            if (searchBar.Text == "")
+            {
+                matchHistoryItems();
+            }
+            else
+            {
+                List<Searchable> prioResults = (from item in Searchables where item.Name.StartsWith(searchBar.Text, StringComparison.OrdinalIgnoreCase) select item).ToList();
 
-            List<Searchable> prioResults = (from item in Searchables where item.Name.StartsWith(searchBar.Text, StringComparison.OrdinalIgnoreCase) select item).ToList();
+                List<Searchable> secondResults = (from item in Searchables where item.Name.Contains(searchBar.Text, StringComparison.OrdinalIgnoreCase) select item).ToList();
 
-            List<Searchable> secondResults = (from item in Searchables where item.Name.Contains(searchBar.Text, StringComparison.OrdinalIgnoreCase) select item).ToList();
+                searchResults.ItemsSource = prioResults.Union(secondResults).ToList();
+            }
+        }
 
-            searchResults.ItemsSource = prioResults.Union(secondResults).ToList();
+        private async void matchHistoryItems()
+        {
+            // in need of testing purpose
+            // await conn.DeleteAllAsync<Searchable>();
+
+            history = await conn.Table<Searchable>().ToListAsync();
+
+            for (int i = 0; i < history.Count; i++)
+            {
+                history[i] = (from item in Searchables where item.Name == history[i].Name && item.Type == history[i].Type select item).FirstOrDefault();
+                Debug.WriteLine(Searchables.Count);
+            }
+
+            // Showing latest searches then older searches
+            history.Reverse();
+            searchResults.ItemsSource = history;
         }
 
         private async void  lv_ItemTapped(object sender, ItemTappedEventArgs e)
@@ -134,6 +199,16 @@ namespace ParagonWiki
             {
                 return;
             }
+
+            try
+            {
+                // update the history database
+                await conn.InsertAsync(new Searchable { Name = search.Name, Description = search.Description, Type = search.Type });
+            } catch (Exception ex)
+            {
+                // can't add the row if the item has already been there in the table (Name is an UNIQUE field). Not an error.
+            }
+
             if (search is Item item) {
                 await Navigation.PushAsync(new DescriptionPage(item), true);
             }
