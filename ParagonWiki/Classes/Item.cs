@@ -11,7 +11,6 @@ namespace ParagonWiki.Classes
     public class Item : Searchable 
     {
         // Basics of items
-        [JsonProperty(PropertyName = "Icon")] public Image? Icon { get; set; }
         [JsonProperty(PropertyName = "Stackable")] public bool? Stackable { get; set; }
         [JsonProperty(PropertyName = "MaxQuantityInSlot")] public int? MaxQuantityInSlot { get; set; }
         [JsonProperty(PropertyName = "Effect")] public string? Effect { get; set; }

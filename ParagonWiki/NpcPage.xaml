@@ -15,7 +15,7 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Image Grid.Column="0" Grid.Row="0" VerticalOptions="Center" HorizontalOptions="Center"></Image>
+            <Image x:Name="npcIcon" Grid.Column="0" Grid.Row="0" VerticalOptions="Center" HorizontalOptions="Center"></Image>
             <VerticalStackLayout Grid.Column="1" Grid.Row="0" VerticalOptions="Center" HorizontalOptions="Center">
                 <Label x:Name="title" TextType="Html" FontSize="40"/>
                 <Label x:Name="description" TextType="Html" FontSize="15" FontAttributes="Italic"/>

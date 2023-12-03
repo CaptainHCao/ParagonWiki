@@ -28,6 +28,19 @@ namespace ParagonWiki
         public static MainPage singleton;
 
         SQLiteAsyncConnection conn;
+
+        public async void InitializeConstants()
+        {
+            await SecureStorage.Default.SetAsync("unknownItemIconURL", 
+                "https://firebasestorage.googleapis.com/v0/b/paragon-plus-b130f.appspot.com/o/icons%2Finventory.png?alt=media&token=57667942-0ca3-4443-84b2-5d5a3a064f9d");
+            await SecureStorage.Default.SetAsync("unknownQuestIconURL", 
+                "https://firebasestorage.googleapis.com/v0/b/paragon-plus-b130f.appspot.com/o/icons%2Fmagic.png?alt=media&token=aeb464a3-0732-4e6e-bcfc-e14285e3eb8f");
+            await SecureStorage.Default.SetAsync("unknowNpcIconURL", 
+                "https://firebasestorage.googleapis.com/v0/b/paragon-plus-b130f.appspot.com/o/icons%2Fcharacter.png?alt=media&token=09193acd-1dfc-4b45-88f6-da6598d1af35");
+            await SecureStorage.Default.SetAsync("unknowIconURL", 
+                "https://firebasestorage.googleapis.com/v0/b/paragon-plus-b130f.appspot.com/o/icons%2Fquestion.png?alt=media&token=b5c05f86-8d9e-477f-8d06-c856a1ff8e59");
+        }
+
         public async void CreateConnection()
         {
             string libFolder = FileSystem.AppDataDirectory;
@@ -84,6 +97,7 @@ namespace ParagonWiki
             //                    });
 
             InitData();
+            InitializeConstants();
         }
 
         protected async void InitData()
@@ -129,14 +143,37 @@ namespace ParagonWiki
             matchHistoryItems();
         }
 
-        private void FetchSearchSource()
+        private async void FetchSearchSource()
         {
             Searchables.Clear();
-            foreach (var item in Items) { Searchables.Add(item); }
-            foreach (var item in Quests) { Searchables.Add(item); }
 
+            // items filled
+            foreach (var item in Items) {
+                if (item.iconURL == null)
+                {
+                    item.typeIcon = await SecureStorage.Default.GetAsync("unknownItemIconURL");
+                } else
+                {
+                    item.typeIcon = item.iconURL;
+                }
+                Searchables.Add(item);
+            }
+
+            // quests filled
+            foreach (var item in Quests) { 
+                Searchables.Add(item);
+                item.typeIcon = await SecureStorage.Default.GetAsync("unknownQuestIconURL");
+            }
+
+            // npcs filled
             FetchNPCs();
-            foreach (var item in NPCs) { Searchables.Add(item); }
+            foreach (var item in NPCs) { 
+                Searchables.Add(item);
+                if (item.iconURL == null)
+                {
+                    item.typeIcon = await SecureStorage.Default.GetAsync("unknowNpcIconURL");
+                }
+            }
         }
 
         private void FetchNPCs()
@@ -158,6 +195,21 @@ namespace ParagonWiki
 
         }
 
+        protected override void OnAppearing()
+        {
+            // fix the bug where it does not re-locate the latest searched item to the top of the history after you hit the back button.
+            if (searchBar.Text == "")
+            {
+                matchHistoryItems();
+            }
+
+            if (searchResults.ItemsSource != null)
+            {
+                // restart the scroll to the top everytime back to this main page.
+                searchResults.ScrollTo((searchResults.ItemsSource as List<Searchable>).First(), 0, false);
+            }
+        }
+
         public void OnTextChanged(object sender, EventArgs e)
         {
             if (searchBar.Text == "")
@@ -177,14 +229,14 @@ namespace ParagonWiki
         private async void matchHistoryItems()
         {
             // in need of testing purpose
-            // await conn.DeleteAllAsync<Searchable>();
+            //await conn.DeleteAllAsync<Searchable>();
 
-            history = await conn.Table<Searchable>().ToListAsync();
+            if (conn == null) return;
+            history = await conn.Table<Searchable>().OrderBy(item => item.Id).ToListAsync();
 
             for (int i = 0; i < history.Count; i++)
             {
                 history[i] = (from item in Searchables where item.Name == history[i].Name && item.Type == history[i].Type select item).FirstOrDefault();
-                Debug.WriteLine(Searchables.Count);
             }
 
             // Showing latest searches then older searches
@@ -202,11 +254,14 @@ namespace ParagonWiki
 
             try
             {
-                // update the history database
+                // update the history database by removing and adding the same thing. This is just to reorder the database.
+                await conn.Table<Searchable>().DeleteAsync(dbItem => dbItem.Name == search.Name && dbItem.Type == search.Type);
                 await conn.InsertAsync(new Searchable { Name = search.Name, Description = search.Description, Type = search.Type });
             } catch (Exception ex)
             {
-                // can't add the row if the item has already been there in the table (Name is an UNIQUE field). Not an error.
+                Debug.WriteLine(ex.ToString());
+                // can't delete the row if the item has not already been there in the table. So just add an entity instead. Not an error.
+                await conn.InsertAsync(new Searchable { Name = search.Name, Description = search.Description, Type = search.Type });
             }
 
             if (search is Item item) {

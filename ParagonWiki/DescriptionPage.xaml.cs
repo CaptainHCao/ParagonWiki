@@ -2,6 +2,7 @@ using ParagonWiki.Classes;
 using System.Security.Cryptography.X509Certificates;
 using static System.Net.Mime.MediaTypeNames;
 using System.Xml.Linq;
+using static System.Net.WebRequestMethods;
 
 namespace ParagonWiki;
 
@@ -11,10 +12,11 @@ public partial class DescriptionPage : ContentPage
 	{
 		InitializeComponent();
         ItemPage(item);
-	}
-
-	public void ItemPage(Item item)
+    }
+    public async void ItemPage(Item item)
 	{
+        itemIcon.Source = item.iconURL != null ? item.iconURL : await SecureStorage.Default.GetAsync("unknowIconURL");
+
         title.Text = $"{item.Name} ({item.Type})";
         description.Text = item.Description;
         effect.Text = item.Effect != null ? item.Effect : "No special effect has been discovered...";

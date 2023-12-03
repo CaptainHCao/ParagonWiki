@@ -5,6 +5,7 @@
              Title="DescriptionPage">
     <ScrollView>
         <VerticalStackLayout x:Name="container" HorizontalOptions="Center">
+            <Image x:Name="itemIcon" HeightRequest="200" WidthRequest="200" HorizontalOptions="Center"/>
             <Label x:Name="title" TextType="Html" FontSize="30"></Label>
             <Label x:Name="description" TextType="Html" FontSize="20" FontAttributes="Italic" ></Label>
             <VerticalStackLayout x:Name="itemSection">

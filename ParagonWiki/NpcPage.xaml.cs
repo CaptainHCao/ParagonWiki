@@ -10,10 +10,11 @@ public partial class NpcPage : ContentPage
 		InitializeComponent();
 		NpcPageInitialize(npc);
 	}
-    public void NpcPageInitialize(NPC npc)
+    public async void NpcPageInitialize(NPC npc)
 	{
 		title.Text = npc.Name;
 		description.Text = npc.Description;
+        npcIcon.Source = npc.iconURL != null ? npc.iconURL : await SecureStorage.Default.GetAsync("unknowIconURL");
 
         foreach (var dialogue in npc.dialogues)
 		{

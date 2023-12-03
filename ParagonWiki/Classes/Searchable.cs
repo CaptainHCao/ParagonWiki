@@ -16,7 +16,13 @@ namespace ParagonWiki.Classes
 
         // Basics of all objects (including effects)
         [JsonProperty(PropertyName = "Type")] public string Type { get; set; }
-        [JsonProperty(PropertyName = "Description")] public string? Description { get; set; }
-        [JsonProperty(PropertyName = "Name")] [Column("_name"), Unique] public string Name { get; set; }
+
+        [JsonProperty(PropertyName = "Name")][Column("_name"), Unique] public string Name { get; set; }
+        
+        // Ignore in SQLite
+        [Ignore][JsonProperty(PropertyName = "IconURL")] public string iconURL { get; set; }
+        [Ignore][JsonProperty(PropertyName = "Description")] public string? Description { get; set; }
+        [Ignore] public string typeIcon { get; set; }
+        [Ignore] public string Icon { get; set; }
     }
 }
