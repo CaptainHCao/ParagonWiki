@@ -6,9 +6,23 @@
     xmlns:local="clr-namespace:ParagonWiki"
     Shell.FlyoutBehavior="Disabled">
 
-    <ShellContent
+    <!--<ShellContent
         Title="Home"
         ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Route="MainPage"
+        Icon="search_icon.png"/>
 
+    <ShellContent
+        Title="Equipment"
+        ContentTemplate="{DataTemplate local:Equipment}"
+        Route="Equipment"
+        Icon="equipment_icon.png"/>-->
+
+    <TabBar>
+        <ShellContent Title="Search" Icon="dotnet_bot"
+                         ContentTemplate="{DataTemplate local:MainPage}" />
+
+        <ShellContent Title="Equipment Tryout" Icon="dotnet_bot" ContentTemplate="{DataTemplate local:Equipment}" />
+    </TabBar>
+    
 </Shell>

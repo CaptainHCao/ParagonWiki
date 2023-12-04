@@ -1,15 +1,17 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<?xml version="1.0" encoding="utf-8" ?>
+<mct:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
              xmlns:classes="clr-namespace:ParagonWiki.Classes"
-             x:Class="ParagonWiki.MainPage">
-
+             x:Class="ParagonWiki.PopupSearch"
+             CanBeDismissedByTappingOutsideOfPopup="False"
+             Size="500, 700">
     <StackLayout>
         <SearchBar x:Name="searchBar" Text=""
-                   TextChanged="OnTextChanged"/>
+               TextChanged="OnTextChanged"/>
         <ListView x:Name="searchResults" ItemTapped="searchResults_ItemTapped">
             <ListView.ItemTemplate>
-                <DataTemplate x:DataType="classes:Searchable">
+                <DataTemplate x:DataType="classes:Item">
                     <ViewCell>
                         <Grid Padding="10">
                             <Grid.RowDefinitions>
@@ -18,29 +20,22 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="150" />
                                 <ColumnDefinition Width="150" />
-                                <ColumnDefinition Width="150" />
                             </Grid.ColumnDefinitions>
                             <Image Grid.Column="0">
                                 <Image.Source>
                                     <UriImageSource Uri="{Binding typeIcon}"
-                                                    CacheValidity="10:00:00:00" />
+                                                CacheValidity="10:00:00:00" />
                                 </Image.Source>
                             </Image>
-
                             <Label Grid.Column="1"
-                                    Text="{Binding Name}"
-                                    HorizontalOptions="Center"
-                                    VerticalOptions="Center"
-                                    FontAttributes="Bold"/>
-                            <Label Grid.Column="2"
-                                    Text="{Binding Type}"
-                                    HorizontalOptions="Center"
-                                    VerticalOptions="Center"/>
+                                Text="{Binding Name}"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"
+                                FontAttributes="Bold"/>
                         </Grid>
                     </ViewCell>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <Button Text="Test" Clicked="ButtonClicked"/>
     </StackLayout>
-</ContentPage>
+</mct:Popup>

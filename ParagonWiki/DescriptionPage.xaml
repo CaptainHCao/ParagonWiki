@@ -5,7 +5,11 @@
              Title="DescriptionPage">
     <ScrollView>
         <VerticalStackLayout x:Name="container" HorizontalOptions="Center">
-            <Image x:Name="itemIcon" HeightRequest="200" WidthRequest="200" HorizontalOptions="Center"/>
+            <Image x:Name="itemIcon" HeightRequest="200" WidthRequest="200" HorizontalOptions="Center">
+                <Image.Source>
+                    <UriImageSource CacheValidity="10:00:00:00" />
+                </Image.Source>
+            </Image>
             <Label x:Name="title" TextType="Html" FontSize="30"></Label>
             <Label x:Name="description" TextType="Html" FontSize="20" FontAttributes="Italic" ></Label>
             <VerticalStackLayout x:Name="itemSection">

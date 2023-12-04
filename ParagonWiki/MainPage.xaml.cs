@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Runtime.CompilerServices;
@@ -31,17 +32,17 @@ namespace ParagonWiki
 
         public async void InitializeConstants()
         {
-            await SecureStorage.Default.SetAsync("unknownItemIconURL", 
+            await SecureStorage.Default.SetAsync("unknownItemIconURL",
                 "https://firebasestorage.googleapis.com/v0/b/paragon-plus-b130f.appspot.com/o/icons%2Finventory.png?alt=media&token=57667942-0ca3-4443-84b2-5d5a3a064f9d");
-            await SecureStorage.Default.SetAsync("unknownQuestIconURL", 
+            await SecureStorage.Default.SetAsync("unknownQuestIconURL",
                 "https://firebasestorage.googleapis.com/v0/b/paragon-plus-b130f.appspot.com/o/icons%2Fmagic.png?alt=media&token=aeb464a3-0732-4e6e-bcfc-e14285e3eb8f");
-            await SecureStorage.Default.SetAsync("unknowNpcIconURL", 
+            await SecureStorage.Default.SetAsync("unknowNpcIconURL",
                 "https://firebasestorage.googleapis.com/v0/b/paragon-plus-b130f.appspot.com/o/icons%2Fcharacter.png?alt=media&token=09193acd-1dfc-4b45-88f6-da6598d1af35");
-            await SecureStorage.Default.SetAsync("unknowIconURL", 
+            await SecureStorage.Default.SetAsync("unknowIconURL",
                 "https://firebasestorage.googleapis.com/v0/b/paragon-plus-b130f.appspot.com/o/icons%2Fquestion.png?alt=media&token=b5c05f86-8d9e-477f-8d06-c856a1ff8e59");
         }
 
-        public async void CreateConnection()
+        public async Task CreateConnection()
         {
             string libFolder = FileSystem.AppDataDirectory;
             string fname = System.IO.Path.Combine(libFolder, "history.db");
@@ -52,6 +53,8 @@ namespace ParagonWiki
         public MainPage()
         {
             InitializeComponent();
+
+            singleton = this;
 
             //BindingContext = this;
 
@@ -135,15 +138,15 @@ namespace ParagonWiki
             {
                 Quests.Add(item.Object);
             }
-            
+
             // fectch the searchable item list
-            FetchSearchSource();
+            await FetchSearchSource();
             // update the history
-            CreateConnection();
-            matchHistoryItems();
+            await CreateConnection();
+            await matchHistoryItems();
         }
 
-        private async void FetchSearchSource()
+        private async Task FetchSearchSource()
         {
             Searchables.Clear();
 
@@ -160,14 +163,14 @@ namespace ParagonWiki
             }
 
             // quests filled
-            foreach (var item in Quests) { 
+            foreach (var item in Quests) {
                 Searchables.Add(item);
                 item.typeIcon = await SecureStorage.Default.GetAsync("unknownQuestIconURL");
             }
 
             // npcs filled
             FetchNPCs();
-            foreach (var item in NPCs) { 
+            foreach (var item in NPCs) {
                 Searchables.Add(item);
                 if (item.iconURL == null)
                 {
@@ -178,14 +181,14 @@ namespace ParagonWiki
 
         private void FetchNPCs()
         {
-            foreach (NPC npc in NPCs) { 
+            foreach (NPC npc in NPCs) {
                 npc.dialogues = (from item in Dialogues where item.Owner.Equals(npc.Name, StringComparison.OrdinalIgnoreCase) orderby item.QuestID select item).ToList();
             }
         }
 
         private async void ButtonClicked(object sender, EventArgs e)
         {
-           // testing code
+            // testing code
             Debug.WriteLine(Items.Count);
             Debug.WriteLine(NPCs.Count);
             Debug.WriteLine(Quests.Count);
@@ -195,12 +198,12 @@ namespace ParagonWiki
 
         }
 
-        protected override void OnAppearing()
+        protected async override void OnAppearing()
         {
             // fix the bug where it does not re-locate the latest searched item to the top of the history after you hit the back button.
             if (searchBar.Text == "")
             {
-                matchHistoryItems();
+                await matchHistoryItems();
             }
 
             if (searchResults.ItemsSource != null)
@@ -210,11 +213,11 @@ namespace ParagonWiki
             }
         }
 
-        public void OnTextChanged(object sender, EventArgs e)
+        public async void OnTextChanged(object sender, EventArgs e)
         {
             if (searchBar.Text == "")
             {
-                matchHistoryItems();
+                await matchHistoryItems();
             }
             else
             {
@@ -226,7 +229,7 @@ namespace ParagonWiki
             }
         }
 
-        private async void matchHistoryItems()
+        private async Task matchHistoryItems()
         {
             // in need of testing purpose
             //await conn.DeleteAllAsync<Searchable>();
@@ -244,7 +247,7 @@ namespace ParagonWiki
             searchResults.ItemsSource = history;
         }
 
-        private async void  lv_ItemTapped(object sender, ItemTappedEventArgs e)
+        private async void searchResults_ItemTapped(object sender, ItemTappedEventArgs e)
         {
             Searchable search = searchResults.SelectedItem as Searchable;
             if (search == null)
@@ -271,7 +274,7 @@ namespace ParagonWiki
             {
                 await Navigation.PushAsync(new NpcPage(npc), true);
             }
-            if (search is Quest quest) 
+            if (search is Quest quest)
             {
                 AccumulateRewards(quest);
                 await Navigation.PushAsync(new QuestPage(quest), true);
@@ -281,14 +284,14 @@ namespace ParagonWiki
         private void AccumulateRewards(Quest quest)
         {
             // singleton for this method to avoid running redundant loops many times
-            if (!quest.acquiredRewardsCalculated) 
+            if (!quest.acquiredRewardsCalculated)
             {
                 for (int i = 1; i < quest.QuestID; i++)
                 {
                     Quest aPreviousQuest = (from item in Quests where item.QuestID == i select item).First();
 
                     // Only process if this quest have rewards.
-                    if (aPreviousQuest.QuestReward != null) 
+                    if (aPreviousQuest.QuestReward != null)
                     {
                         foreach (var reward in aPreviousQuest.QuestReward)
                         {
@@ -310,10 +313,10 @@ namespace ParagonWiki
                             }
                         }
                     }
-                    
+
                 }
                 quest.acquiredRewardsCalculated = true;
-            }          
+            }
         }
     }
 }

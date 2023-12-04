@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -10,18 +11,21 @@ namespace ParagonWiki.Classes
 {
     public class Item : Searchable 
     {
+        // local variable for this app
+        public string storedSlot { get; set; }
+
         // Basics of items
-        [JsonProperty(PropertyName = "Stackable")] public bool? Stackable { get; set; }
-        [JsonProperty(PropertyName = "MaxQuantityInSlot")] public int? MaxQuantityInSlot { get; set; }
+        [Ignore] [JsonProperty(PropertyName = "Stackable")] public bool? Stackable { get; set; }
+        [Ignore] [JsonProperty(PropertyName = "MaxQuantityInSlot")] public int? MaxQuantityInSlot { get; set; }
         [JsonProperty(PropertyName = "Effect")] public string? Effect { get; set; }
         [JsonProperty(PropertyName = "Price")] public int? Price { get; set; }
-        [JsonProperty(PropertyName = "Quantity")] public int? Quantity { get; set; } // this is the quantity of each item (aka itemSlot quantity)
+        [Ignore] [JsonProperty(PropertyName = "Quantity")] public int? Quantity { get; set; } // this is the quantity of each item (aka itemSlot quantity)
         [JsonProperty(PropertyName = "EquipmentType")] public string? EquipmentType { get; set; }
 
         // Basics of quest item
         // list of quest that this item appear to be a quest item
-        [JsonProperty(PropertyName = "QuestList")] public List<int>? QuestList { get; set; }
-        [JsonProperty(PropertyName = "SavageDescription")] public List<string>? SavageDescription { get; set; }
+        [Ignore] [JsonProperty(PropertyName = "QuestList")] public List<int>? QuestList { get; set; }
+        [Ignore] [JsonProperty(PropertyName = "SavageDescription")] public List<string>? SavageDescription { get; set; }
 
         // Basics of equipments
         // Armor

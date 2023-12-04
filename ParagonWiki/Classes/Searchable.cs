@@ -22,7 +22,7 @@ namespace ParagonWiki.Classes
         // Ignore in SQLite
         [Ignore][JsonProperty(PropertyName = "IconURL")] public string iconURL { get; set; }
         [Ignore][JsonProperty(PropertyName = "Description")] public string? Description { get; set; }
-        [Ignore] public string typeIcon { get; set; }
+        public string typeIcon { get; set; }
         [Ignore] public string Icon { get; set; }
     }
 }
