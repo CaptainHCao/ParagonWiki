@@ -3,6 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ParagonWiki.DescriptionPage"
              Title="DescriptionPage">
+
+
+    <ContentPage.Resources>
+        <Style TargetType="Label">
+            <Setter Property="Margin" Value="20, 10, 20, 0" />
+            <!--<Setter Property="TextColor" Value="Blue" />-->
+        </Style>
+    </ContentPage.Resources>
+
     <ScrollView>
         <VerticalStackLayout x:Name="container" HorizontalOptions="Center">
             <Image x:Name="itemIcon" HeightRequest="200" WidthRequest="200" HorizontalOptions="Center">

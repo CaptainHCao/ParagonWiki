@@ -3,6 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ParagonWiki.NpcPage"
              Title="NpcPage">
+    <ContentPage.Resources>
+        <Style TargetType="Label">
+            <Setter Property="Margin" Value="20, 10, 20, 0" />
+            <!--<Setter Property="TextColor" Value="Blue" />-->
+        </Style>
+    </ContentPage.Resources>
+    
     <ScrollView>
         <Grid>
             <Grid.RowDefinitions>
@@ -20,7 +27,7 @@
                 <Label x:Name="title" TextType="Html" FontSize="40"/>
                 <Label x:Name="description" TextType="Html" FontSize="15" FontAttributes="Italic"/>
             </VerticalStackLayout>
-            <VerticalStackLayout Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" VerticalOptions="Center" HorizontalOptions="Center">
+            <VerticalStackLayout Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" VerticalOptions="Center" HorizontalOptions="Center" Margin="0, 0, 0, 20">
                 <Label Text="Quotes" TextType="Html" FontSize="30"/>
                 <VerticalStackLayout x:Name="quotes" VerticalOptions="Center" HorizontalOptions="Start"/>
             </VerticalStackLayout>

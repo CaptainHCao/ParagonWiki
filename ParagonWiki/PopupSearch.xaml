@@ -4,7 +4,7 @@
              xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
              xmlns:classes="clr-namespace:ParagonWiki.Classes"
              x:Class="ParagonWiki.PopupSearch"
-             CanBeDismissedByTappingOutsideOfPopup="False"
+             CanBeDismissedByTappingOutsideOfPopup="True"
              Size="500, 700">
     <StackLayout>
         <SearchBar x:Name="searchBar" Text=""

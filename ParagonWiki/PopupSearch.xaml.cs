@@ -8,24 +8,32 @@ namespace ParagonWiki;
 
 public partial class PopupSearch : Popup
 {
-    private List<Item> ItemPool = null;
+    private List<Item> ItemPool = new List<Item>();
+    private List<Item> validItemPool = new List<Item>();    
     public string typeStoredInDb;
     public string equipmentType;
-    public ImageButton imageButton;
+    //public ImageButton imageButton;
+    string equipmentSlot;
 
-    public PopupSearch(ref object caller)
+    public PopupSearch(string slot)
 	{
 		InitializeComponent();
 
-        imageButton = caller as ImageButton;
-        string equipmentSlot = imageButton.StyleId;
+        //imageButton = caller as ImageButton;
+        //string equipmentSlot = imageButton.StyleId;
 
+        equipmentSlot = slot;
+
+        ItemPool.Add(new Item { Name = "None" }); 
+        
         // secondary weapon works differently. 
         if (equipmentSlot == "secondaryWeaponSlot")
         {
-            ItemPool = (from item in MainPage.singleton.Items where
-                        item.EquipmentType == "Support Weapon" || 
-                        (item.EquipmentType == "Weapon" && (bool)item.CanBeLeftHanded) select item).ToList();
+            validItemPool = (from item in MainPage.singleton.Items
+                             where item.EquipmentType == "Support Weapon" ||
+                             (item.EquipmentType == "Weapon" && (bool)item.CanBeLeftHanded)
+                             select item).ToList();
+            ItemPool.AddRange(validItemPool);
         } else
         {
             switch (equipmentSlot)
@@ -46,7 +54,8 @@ public partial class PopupSearch : Popup
                     equipmentType = "Cape";
                     break;
             }
-            ItemPool = (from item in MainPage.singleton.Items where item.EquipmentType == equipmentType select item).ToList();
+            validItemPool = (from item in MainPage.singleton.Items where item.EquipmentType == equipmentType select item).ToList();
+            ItemPool.AddRange(validItemPool);
         }
 
         OnTextChanged(null, null);
@@ -68,13 +77,36 @@ public partial class PopupSearch : Popup
         {
             return;
         }
-
-        // add item to database
-        await Equipment.singleton.AddToEquipments(imageButton.StyleId, itemChosen);
-
+        else if (itemChosen.Name == "None")
+        {
+            await Equipment.singleton.RemoveFromEquipments(equipmentSlot);
+        }
+        else
+        {
+            // add item to database
+            await Equipment.singleton.AddToEquipments(equipmentSlot, itemChosen);
+        }
         // update the display
         await Equipment.singleton.DisplayEquipments();
 
         Close();
+    }
+
+    public async Task random_equip()
+    {
+        // add item to database
+        await Equipment.singleton.AddToEquipments(equipmentSlot, randomItem());
+    }
+
+    private Item randomItem()
+    {
+        // Create a Random object
+        Random random = new Random();
+
+        // Get a random index excluding the first element
+        int randomIndex = random.Next(0, validItemPool.Count);
+
+        // Retrieve the random element
+        return validItemPool[randomIndex];
     }
 }

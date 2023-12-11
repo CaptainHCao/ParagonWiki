@@ -10,18 +10,33 @@
                 <RowDefinition Height="150" />
                 <RowDefinition Height="150" />
                 <RowDefinition Height="150" />
+                <RowDefinition Height="50" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <ImageButton Aspect="AspectFit" Grid.Column="0" Grid.Row="0" Clicked="image_Clicked" x:Name="helmetSlot"/>
-            <ImageButton Aspect="AspectFit" Grid.Column="0" Grid.Row="1" Clicked="image_Clicked" x:Name="armorSlot" />
-            <ImageButton Aspect="AspectFit" Grid.Column="0" Grid.Row="2" Clicked="image_Clicked" x:Name="secondaryWeaponSlot" />
-            <ImageButton Aspect="AspectFit" Grid.Column="1" Grid.Row="0" Clicked="image_Clicked" x:Name="cosmeticSlot" />
-            <ImageButton Aspect="AspectFit" Grid.Column="1" Grid.Row="1" Clicked="image_Clicked" x:Name="capeSlot" />
-            <ImageButton Aspect="AspectFit" Grid.Column="1" Grid.Row="2" Clicked="image_Clicked" x:Name="primaryWeaponSlot" />
+            <ImageButton Aspect="AspectFit" Grid.Column="0" Grid.Row="0" Clicked="image_Clicked" x:Name="helmetSlot" Margin="15"/>
+            <ImageButton Aspect="AspectFit" Grid.Column="0" Grid.Row="1" Clicked="image_Clicked" x:Name="armorSlot" Margin="15"/>
+            <ImageButton Aspect="AspectFit" Grid.Column="0" Grid.Row="2" Clicked="image_Clicked" x:Name="secondaryWeaponSlot" Margin="15"/>
+            <ImageButton Aspect="AspectFit" Grid.Column="1" Grid.Row="0" Clicked="image_Clicked" x:Name="cosmeticSlot" Margin="15"/>
+            <ImageButton Aspect="AspectFit" Grid.Column="1" Grid.Row="1" Clicked="image_Clicked" x:Name="capeSlot" Margin="15"/>
+            <ImageButton Aspect="AspectFit" Grid.Column="1" Grid.Row="2" Clicked="image_Clicked" x:Name="primaryWeaponSlot" Margin="15"/>
+            <Button Grid.Column="0" Grid.Row="3" Text="Random equipments" Clicked="random_equipments" Margin="20, 0, 10, 0"></Button>
+            <Button Grid.Column="1" Grid.Row="3" Text="Unequip all" Clicked="remove_all" Margin="10, 0, 20, 0"> </Button>
+            <VerticalStackLayout x:Name="statsSection" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2">
+                <Label x:Name="Class" Text="" FontSize="20" />
+                <Label x:Name="ATK"/>
+                <Label x:Name="DEF"/>
+                <Label x:Name="MAG"/>
+                <Label x:Name="CRIT"/>
+                <Label x:Name="EVA"/>
+                <Label x:Name="DamageAmplifier"/>
+                <Label x:Name="KnockBack"/>
+                <VerticalStackLayout x:Name="EffectSection">
+                </VerticalStackLayout>
+            </VerticalStackLayout>
         </Grid>
     </ScrollView>
 </ContentPage>

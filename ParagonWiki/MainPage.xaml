@@ -5,8 +5,20 @@
              x:Class="ParagonWiki.MainPage">
 
     <StackLayout>
-        <SearchBar x:Name="searchBar" Text=""
-                   TextChanged="OnTextChanged"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <SearchBar Grid.Row="0" Grid.Column="0" x:Name="searchBar" Text="" HorizontalOptions="FillAndExpand"
+                            TextChanged="OnTextChanged"/>
+            <Button Grid.Row="0" Grid.Column="1" Text="Clear history" Clicked="Button_Clicked"></Button>
+            
+        </Grid>
+
         <ListView x:Name="searchResults" ItemTapped="searchResults_ItemTapped">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="classes:Searchable">
@@ -41,6 +53,5 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <Button Text="Test" Clicked="ButtonClicked"/>
     </StackLayout>
 </ContentPage>

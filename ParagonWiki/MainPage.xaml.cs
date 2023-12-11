@@ -1,14 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
-using System.Runtime.CompilerServices;
 using Firebase.Database;
 using Firebase.Database.Query;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Storage;
-using Newtonsoft.Json;
 using ParagonWiki.Classes;
 using SQLite;
 
@@ -22,7 +16,7 @@ namespace ParagonWiki
         public ObservableCollection<NPC> NPCs { get; set; } = new ObservableCollection<NPC>();
         public static ObservableCollection<Searchable> Searchables { get; set; } = new ObservableCollection<Searchable>();
 
-        public static List<Searchable> history { get; set; } = new List<Searchable>();
+        public static ObservableCollection<Searchable> searchList { get; set; } = new ObservableCollection<Searchable>();
 
         FirebaseClient firebaseClient = new FirebaseClient("https://paragon-plus-b130f-default-rtdb.firebaseio.com/");
 
@@ -48,6 +42,9 @@ namespace ParagonWiki
             string fname = System.IO.Path.Combine(libFolder, "history.db");
             conn = new SQLiteAsyncConnection(fname);
             await conn.CreateTableAsync<Searchable>();
+
+            // in need of testing purpose
+            // await conn.DeleteAllAsync<Searchable>();
         }
 
         public MainPage()
@@ -56,48 +53,7 @@ namespace ParagonWiki
 
             singleton = this;
 
-            //BindingContext = this;
-
-            //var ItemCollection = firebaseClient
-            //                    .Child("Items")
-            //                    .AsObservable<Item>()
-            //                    .Subscribe((item) =>
-            //                    {
-            //                        if (item.Object != null)
-            //                        {
-            //                            Items.Add(item.Object);
-            //                        }
-            //                    });
-            //var DialogueCollection = firebaseClient
-            //                    .Child("Dialogues")
-            //                    .AsObservable<Dialogue>()
-            //                    .Subscribe((item) =>
-            //                    {
-            //                        if (item.Object != null)
-            //                        {
-            //                            Dialogues.Add(item.Object);
-            //                        }
-            //                    });
-            //var NpcCollection = firebaseClient
-            //                    .Child("NPCs")
-            //                    .AsObservable<NPC>()
-            //                    .Subscribe((item) =>
-            //                    {
-            //                        if (item.Object != null)
-            //                        {
-            //                            NPCs.Add(item.Object);
-            //                        }
-            //                    });
-            //var QuestCollection = firebaseClient
-            //                    .Child("Quests")
-            //                    .AsObservable<Quest>()
-            //                    .Subscribe((item) =>
-            //                    {
-            //                        if (item.Object != null)
-            //                        {
-            //                            Quests.Add(item.Object);
-            //                        }
-            //                    });
+            searchResults.ItemsSource = searchList;
 
             InitData();
             InitializeConstants();
@@ -186,16 +142,15 @@ namespace ParagonWiki
             }
         }
 
-        private async void ButtonClicked(object sender, EventArgs e)
+        private async void Button_Clicked(object sender, EventArgs e)
         {
-            // testing code
-            Debug.WriteLine(Items.Count);
-            Debug.WriteLine(NPCs.Count);
-            Debug.WriteLine(Quests.Count);
-            Debug.WriteLine(Dialogues.Count);
-
-            Debug.WriteLine(Searchables.Count);
-
+            // clear the history
+            bool answer = await DisplayAlert(null, "Removing your search history?", "Yes", "No");
+            if (answer)
+            {
+                await conn.DeleteAllAsync<Searchable>();
+                await matchHistoryItems();
+            }
         }
 
         protected async override void OnAppearing()
@@ -206,10 +161,10 @@ namespace ParagonWiki
                 await matchHistoryItems();
             }
 
-            if (searchResults.ItemsSource != null)
+            if (searchResults.ItemsSource != null && (searchResults.ItemsSource as ObservableCollection<Searchable>).Count >= 1)
             {
                 // restart the scroll to the top everytime back to this main page.
-                searchResults.ScrollTo((searchResults.ItemsSource as List<Searchable>).First(), 0, false);
+                searchResults.ScrollTo((searchResults.ItemsSource as ObservableCollection<Searchable>).First(), 0, false);
             }
         }
 
@@ -225,26 +180,37 @@ namespace ParagonWiki
 
                 List<Searchable> secondResults = (from item in Searchables where item.Name.Contains(searchBar.Text, StringComparison.OrdinalIgnoreCase) select item).ToList();
 
-                searchResults.ItemsSource = prioResults.Union(secondResults).ToList();
+                searchList.Clear();
+                foreach (var item in prioResults.Union(secondResults))
+                {
+                    searchList.Add(item);
+                }
             }
         }
 
         private async Task matchHistoryItems()
         {
-            // in need of testing purpose
-            //await conn.DeleteAllAsync<Searchable>();
-
             if (conn == null) return;
-            history = await conn.Table<Searchable>().OrderBy(item => item.Id).ToListAsync();
+
+            List<Searchable> history = new List<Searchable>();
+            foreach (var item in await conn.Table<Searchable>().OrderBy(item => item.Id).ToListAsync())
+            {
+                history.Add(item);
+            }
 
             for (int i = 0; i < history.Count; i++)
             {
                 history[i] = (from item in Searchables where item.Name == history[i].Name && item.Type == history[i].Type select item).FirstOrDefault();
             }
 
+            searchList.Clear();
+
             // Showing latest searches then older searches
-            history.Reverse();
-            searchResults.ItemsSource = history;
+            // searchList.Reverse<Searchable>(); does not work
+            for (int i = history.Count - 1; i >= 0; i--)
+            {
+                searchList.Add(history[i]);
+            }
         }
 
         private async void searchResults_ItemTapped(object sender, ItemTappedEventArgs e)
